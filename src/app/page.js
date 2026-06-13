@@ -21,6 +21,9 @@ export default function Home() {
   const [isSending, setIsSending] = useState(false);
   const [sendStatus, setSendStatus] = useState({ type: '', message: '' });
 
+  // 가이드 모달 상태
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+
   useEffect(() => {
     // 발신 번호 불러오기
     fetch('/api/config')
@@ -136,10 +139,118 @@ export default function Home() {
 
   return (
     <div className="app-container">
-      <header className="header">
-        <h1>Belleforet</h1>
-        <p>AI CS 통합 센터</p>
+      <header className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1>Belleforet</h1>
+          <p>AI CS 통합 센터</p>
+        </div>
+        <button 
+          onClick={() => setIsGuideOpen(true)}
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          사용 방법
+        </button>
       </header>
+
+      {/* 사용 가이드 모달 */}
+      {isGuideOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(5px)',
+          zIndex: 1000,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #2c3e50, #3498db)',
+            borderRadius: '16px',
+            width: '100%',
+            maxWidth: '600px',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            padding: '30px',
+            position: 'relative',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+            border: '1px solid rgba(255,255,255,0.2)'
+          }}>
+            <button 
+              onClick={() => setIsGuideOpen(false)}
+              style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1.5rem' }}
+            >
+              &times;
+            </button>
+            <h2 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              🛎️ 벨포레CS 문자 발송 시스템 가이드
+            </h2>
+            <div style={{ lineHeight: '1.6', fontSize: '0.95rem', color: '#f8f9fa' }}>
+              <p>초보자도 클릭 몇 번이면 베테랑처럼 고객 문의에 답변할 수 있습니다. 아래의 3단계 흐름만 기억하세요!</p>
+              
+              <h3 style={{ marginTop: '20px', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '5px' }}>🚀 1분 컷 핵심 요약</h3>
+              <ol style={{ paddingLeft: '20px', marginTop: '10px' }}>
+                <li style={{ marginBottom: '5px' }}><strong>입력:</strong> 고객 정보(전화번호/이름)를 적습니다.</li>
+                <li style={{ marginBottom: '5px' }}><strong>생성:</strong> 고객의 질문을 키워드로 적고 [AI 답변 생성] 버튼을 누릅니다.</li>
+                <li style={{ marginBottom: '5px' }}><strong>발송:</strong> AI가 만들어준 내용을 확인하고 [최종 발송]을 누릅니다.</li>
+              </ol>
+
+              <h3 style={{ marginTop: '20px', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '5px' }}>🎬 상황별 실전 시나리오</h3>
+              
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '8px', marginTop: '15px' }}>
+                <strong style={{ color: '#ffbeb8' }}>💡 [상황 1] 고객이 처음 전화로 문의했을 때</strong>
+                <ul style={{ paddingLeft: '20px', marginTop: '5px', listStyleType: 'circle' }}>
+                  <li><strong>입력:</strong> <code>010-1234-5678</code> / <code>홍길동</code></li>
+                  <li><strong>질문 요약:</strong> "루지 키 제한이랑 가격 어떻게 돼?"</li>
+                  <li><strong>생성:</strong> AI가 벨포레 데이터베이스를 검색해 정중한 답변을 자동 완성합니다.</li>
+                  <li><strong>발송:</strong> 내용을 확인하고 [최종 발송]을 누르면 끝!</li>
+                </ul>
+              </div>
+
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '8px', marginTop: '15px' }}>
+                <strong style={{ color: '#ffd43b' }}>💡 [상황 2] 예전에 전화했던 단골 고객일 때</strong>
+                <ul style={{ paddingLeft: '20px', marginTop: '5px', listStyleType: 'circle' }}>
+                  <li>고객 전화번호를 치는 순간 우측에 <strong>과거 상담 기록</strong>이 주르륵 뜹니다.</li>
+                  <li><em>"아~ 고객님 저번에 문의하신 건은 잘 해결되셨나요?"</em> 라며 센스 있게 먼저 응대해 보세요!</li>
+                </ul>
+              </div>
+
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '8px', marginTop: '15px' }}>
+                <strong style={{ color: '#69db7c' }}>💡 [상황 3] 기상 악화 등 정보 수정이 필요할 때</strong>
+                <ul style={{ paddingLeft: '20px', marginTop: '5px', listStyleType: 'circle' }}>
+                  <li>AI가 답변을 완성한 후에도 마우스로 클릭해 <strong>텍스트를 자유롭게 수정</strong>할 수 있습니다.</li>
+                  <li><em>"비가 와서 오늘은 루지가 휴장입니다"</em> 와 같이 추가/수정 후 발송하세요.</li>
+                </ul>
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsGuideOpen(false)}
+              className="btn-primary"
+              style={{ width: '100%', marginTop: '25px', padding: '12px', background: 'var(--bubble-ai)' }}
+            >
+              가이드 닫기
+            </button>
+          </div>
+        </div>
+      )}
 
       <main className="main-grid">
         {/* Step 1: 고객 정보 카드 */}
