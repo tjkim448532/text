@@ -38,12 +38,11 @@ try {
   console.error("Error initializing GoogleGenAI:", error);
 }
 
-const pc = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY
-});
-
 export async function POST(request) {
   try {
+    const pc = new Pinecone({
+      apiKey: process.env.PINECONE_API_KEY || 'MISSING_KEY'
+    });
     const { question, customerName, phoneNumber } = await request.json();
 
     if (!question) {
