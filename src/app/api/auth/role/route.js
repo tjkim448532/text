@@ -19,7 +19,8 @@ export async function GET(request) {
     const docRef = await db.collection('user_roles').doc(email).get();
     
     if (docRef.exists) {
-      return NextResponse.json({ role: docRef.data().role || 'USER' });
+      const fetchedRole = docRef.data().role || 'USER';
+      return NextResponse.json({ role: fetchedRole.toUpperCase() });
     } else {
       return NextResponse.json({ role: 'USER' });
     }

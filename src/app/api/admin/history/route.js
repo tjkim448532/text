@@ -12,9 +12,11 @@ export async function GET(request) {
   const email = authResult.user.email;
   const db = getAdminDb();
   
-  // 관리자 권한(SUPER) 검증
+  // 관리자 권한(SUPER) 검증 (대소문자 무시)
   const roleDoc = await db.collection('user_roles').doc(email).get();
-  if (!roleDoc.exists || roleDoc.data().role !== 'SUPER') {
+  const fetchedRole = roleDoc.exists ? (roleDoc.data().role || '') : '';
+  
+  if (fetchedRole.toUpperCase() !== 'SUPER') {
     return NextResponse.json({ error: '관리자 권한이 없습니다.' }, { status: 403 });
   }
 
