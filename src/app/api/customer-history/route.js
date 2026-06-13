@@ -56,6 +56,7 @@ export async function GET(request) {
         customerName: data.customerName,
         question: data.question,
         answer: data.answer,
+        employeeEmail: data.employeeEmail, // 발송 담당자
         sentAt: data.sentAt ? data.sentAt.toDate().getTime() : 0, // 밀리초로 변환하여 정렬용으로 사용
         sentAtString: data.sentAt ? data.sentAt.toDate().toISOString() : null
       });
@@ -68,6 +69,7 @@ export async function GET(request) {
       customerName: item.customerName,
       question: item.question,
       answer: item.answer,
+      employeeEmail: item.employeeEmail,
       sentAt: item.sentAtString
     }));
 

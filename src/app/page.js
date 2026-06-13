@@ -1,8 +1,24 @@
-'use client';
-
 import { useState, useEffect } from 'react';
+import { app, auth } from '../lib/firebase';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from 'firebase/auth';
 
 export default function Home() {
+  // === Auth State ===
+  const [user, setUser] = useState(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  
+  // Login State
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Password Change State
+  const [isPasswordChangeOpen, setIsPasswordChangeOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordChangeStatus, setPasswordChangeStatus] = useState({ type: '', message: '' });
+
+  // === App State ===
   // Step 1: 고객 정보
   const [customerName, setCustomerName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -24,6 +40,15 @@ export default function Home() {
   // 가이드 모달 상태
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
+  // === Effects ===
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setIsAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     // 발신 번호 불러오기
     fetch('/api/config')
@@ -43,6 +68,45 @@ export default function Home() {
     }
   }, [phoneNumber]);
 
+  // === Auth Handlers ===
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginError('');
+    try {
+      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+    } catch (err) {
+      setLoginError('로그인 실패: 이메일과 비밀번호를 확인해주세요.');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      setPasswordChangeStatus({ type: 'error', message: '비밀번호는 최소 6자리 이상이어야 합니다.' });
+      return;
+    }
+    setPasswordChangeStatus({ type: '', message: '' });
+    try {
+      await updatePassword(auth.currentUser, newPassword);
+      setPasswordChangeStatus({ type: 'success', message: '비밀번호가 성공적으로 변경되었습니다!' });
+      setNewPassword('');
+      setTimeout(() => {
+        setIsPasswordChangeOpen(false);
+        setPasswordChangeStatus({ type: '', message: '' });
+      }, 2000);
+    } catch (err) {
+      setPasswordChangeStatus({ type: 'error', message: '오류가 발생했습니다. (최근에 로그인한 상태여야 합니다. 로그아웃 후 다시 시도해보세요.)' });
+    }
+  };
+
+  // === App Handlers ===
   const fetchCustomerHistory = async (phone) => {
     setIsFetchingHistory(true);
     setHistoryError('');
@@ -72,7 +136,12 @@ export default function Home() {
       const response = await fetch('/api/generate-message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, customerName, phoneNumber }),
+        body: JSON.stringify({ 
+          question, 
+          customerName, 
+          phoneNumber,
+          employeeEmail: user?.email // 담당자 기록용
+        }),
       });
 
       const data = await response.json();
@@ -110,7 +179,8 @@ export default function Home() {
           to: phoneNumber,
           text: generatedMessage,
           customerName: customerName,
-          question: question
+          question: question,
+          employeeEmail: user?.email // 담당자 기록용
         }),
       });
 
@@ -137,6 +207,52 @@ export default function Home() {
     setSendStatus({ type: '', message: '' });
   };
 
+  // === Renders ===
+  if (isAuthLoading) {
+    return <div className="app-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}><div className="spinner"></div></div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="app-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="glass-card" style={{ width: '100%', maxWidth: '400px', padding: '40px 30px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <h1 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>Belleforet CS</h1>
+            <p style={{ color: '#ccc', fontSize: '0.9rem' }}>직원 로그인</p>
+          </div>
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>사내 이메일</label>
+              <input 
+                type="email" 
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                className="input-field" 
+                placeholder="email@belleforet.com"
+                required
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>비밀번호</label>
+              <input 
+                type="password" 
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                className="input-field" 
+                placeholder="비밀번호 입력"
+                required
+              />
+            </div>
+            {loginError && <div style={{ color: '#ff6b6b', fontSize: '0.85rem' }}>{loginError}</div>}
+            <button type="submit" className="btn-primary" disabled={isLoggingIn} style={{ padding: '12px', marginTop: '10px' }}>
+              {isLoggingIn ? '로그인 중...' : '로그인'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app-container">
       <header className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -144,30 +260,76 @@ export default function Home() {
           <h1>Belleforet</h1>
           <p>AI CS 통합 센터</p>
         </div>
-        <button 
-          onClick={() => setIsGuideOpen(true)}
-          style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            backdropFilter: 'blur(10px)'
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          사용 방법
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ fontSize: '0.85rem', color: '#aaa', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginRight: '10px' }}>
+            <span style={{ color: '#fff' }}>{user.email}</span>
+            <span style={{ cursor: 'pointer', color: '#3498db', marginTop: '4px' }} onClick={() => setIsPasswordChangeOpen(true)}>비밀번호 변경</span>
+          </div>
+          <button 
+            onClick={() => setIsGuideOpen(true)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            사용 방법
+          </button>
+          <button 
+            onClick={handleLogout}
+            style={{
+              background: 'none', border: '1px solid rgba(255,255,255,0.3)', color: '#ccc', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem'
+            }}
+          >
+            로그아웃
+          </button>
+        </div>
       </header>
+
+      {/* 비밀번호 변경 모달 */}
+      {isPasswordChangeOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+        }}>
+          <div style={{ background: '#1e293b', borderRadius: '16px', width: '100%', maxWidth: '400px', padding: '30px', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <h2 style={{ marginBottom: '20px', fontSize: '1.2rem' }}>🔒 비밀번호 변경</h2>
+            <form onSubmit={handleChangePassword}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>새 비밀번호 (6자리 이상)</label>
+              <input 
+                type="password" 
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="input-field" 
+                placeholder="새로운 비밀번호 입력"
+                required
+                style={{ marginBottom: '15px' }}
+              />
+              {passwordChangeStatus.message && (
+                <div style={{ color: passwordChangeStatus.type === 'error' ? '#ff6b6b' : '#51cf66', fontSize: '0.85rem', marginBottom: '15px' }}>
+                  {passwordChangeStatus.message}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>변경하기</button>
+                <button type="button" onClick={() => { setIsPasswordChangeOpen(false); setPasswordChangeStatus({type:'', message:''}); setNewPassword(''); }} className="btn-secondary" style={{ flex: 1, padding: '10px' }}>취소</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* 사용 가이드 모달 */}
       {isGuideOpen && (
@@ -257,7 +419,7 @@ export default function Home() {
         <section className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
           <h2 className="card-title">
             <span style={{ background: 'var(--bubble-ai)', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.9rem', marginRight: '8px' }}>1</span>
-            고객 정보 조회
+            고객 정보 조회 및 등록
           </h2>
           
           <div style={{ marginBottom: '15px' }}>
@@ -294,8 +456,9 @@ export default function Home() {
             
             {!isFetchingHistory && customerHistory.map((item, idx) => (
               <div key={idx} style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px', marginBottom: '10px', fontSize: '0.85rem' }}>
-                <div style={{ color: '#aaa', marginBottom: '4px', fontSize: '0.75rem' }}>
-                  {new Date(item.sentAt).toLocaleString()}
+                <div style={{ color: '#aaa', marginBottom: '4px', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{new Date(item.sentAt).toLocaleString()}</span>
+                  {item.employeeEmail && <span style={{ background: 'rgba(52, 152, 219, 0.2)', color: '#3498db', padding: '2px 6px', borderRadius: '4px' }}>담당: {item.employeeEmail.split('@')[0]}</span>}
                 </div>
                 <div style={{ color: '#fff', marginBottom: '6px' }}><strong>Q:</strong> {item.question}</div>
                 <div style={{ color: '#8ab4f8' }}><strong>A:</strong> {item.answer.substring(0, 50)}...</div>

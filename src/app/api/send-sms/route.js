@@ -44,7 +44,7 @@ export async function POST(request) {
   }
 
   try {
-    const { to, text, customerName, question } = await request.json();
+    const { to, text, customerName, question, employeeEmail } = await request.json();
 
     if (!to || !text) {
       return NextResponse.json({ success: false, error: '수신 번호와 내용 모두 입력해주세요.' }, { status: 400 });
@@ -78,6 +78,7 @@ export async function POST(request) {
           customerName: customerName || '미상',
           question: question || '미입력',
           answer: text,
+          employeeEmail: employeeEmail || '알수없음',
           sentAt: FieldValue.serverTimestamp()
         });
       }
