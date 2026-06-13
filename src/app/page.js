@@ -220,11 +220,11 @@ export default function Home() {
         <div className="glass-card" style={{ width: '100%', maxWidth: '400px', padding: '40px 30px' }}>
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <h1 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>문자 발송 TEST</h1>
-            <p style={{ color: '#ccc', fontSize: '0.9rem' }}>직원 로그인</p>
+            <p style={{ opacity: 0.7, fontSize: '0.9rem' }}>직원 로그인</p>
           </div>
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>사내 이메일</label>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', opacity: 0.7 }}>사내 이메일</label>
               <input 
                 type="email" 
                 value={loginEmail}
@@ -235,7 +235,7 @@ export default function Home() {
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>비밀번호</label>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', opacity: 0.7 }}>비밀번호</label>
               <input 
                 type="password" 
                 value={loginPassword}
@@ -263,16 +263,35 @@ export default function Home() {
           <p>AI CS 통합 센터</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ fontSize: '0.85rem', color: '#aaa', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginRight: '10px' }}>
-            <span style={{ color: '#fff' }}>{user.email}</span>
+          <div style={{ fontSize: '0.85rem', opacity: 0.7, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginRight: '10px' }}>
+            <span style={{ color: 'var(--foreground)', fontWeight: 600 }}>{user.email}</span>
             <span style={{ cursor: 'pointer', color: '#3498db', marginTop: '4px' }} onClick={() => setIsPasswordChangeOpen(true)}>비밀번호 변경</span>
           </div>
+          {user.email === 'admin@test.com' && (
+            <button 
+              onClick={() => router.push('/admin')}
+              style={{
+                background: 'rgba(231, 76, 60, 0.2)',
+                border: '1px solid rgba(231, 76, 60, 0.5)',
+                color: '#ffbeb8',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              👑 관리자
+            </button>
+          )}
           <button 
             onClick={() => setIsGuideOpen(true)}
             style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              color: 'white',
+              background: 'transparent',
+              border: '1px solid var(--card-border)',
+              color: 'var(--foreground)',
               padding: '8px 16px',
               borderRadius: '20px',
               cursor: 'pointer',
@@ -293,7 +312,7 @@ export default function Home() {
           <button 
             onClick={handleLogout}
             style={{
-              background: 'none', border: '1px solid rgba(255,255,255,0.3)', color: '#ccc', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem'
+              background: 'none', border: '1px solid var(--card-border)', color: 'var(--foreground)', opacity: 0.8, padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem'
             }}
           >
             로그아웃
@@ -304,12 +323,12 @@ export default function Home() {
       {/* 비밀번호 변경 모달 */}
       {isPasswordChangeOpen && (
         <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(5px)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
         }}>
-          <div style={{ background: '#1e293b', borderRadius: '16px', width: '100%', maxWidth: '400px', padding: '30px', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)' }}>
-            <h2 style={{ marginBottom: '20px', fontSize: '1.2rem' }}>🔒 비밀번호 변경</h2>
+          <div style={{ background: 'var(--background)', borderRadius: '16px', width: '100%', maxWidth: '400px', padding: '30px', position: 'relative', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--card-border)' }}>
+            <h2 style={{ marginBottom: '20px', fontSize: '1.2rem', color: 'var(--foreground)' }}>🔒 비밀번호 변경</h2>
             <form onSubmit={handleChangePassword}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>새 비밀번호 (6자리 이상)</label>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', opacity: 0.7 }}>새 비밀번호 (6자리 이상)</label>
               <input 
                 type="password" 
                 value={newPassword}
@@ -338,7 +357,7 @@ export default function Home() {
         <div style={{
           position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.7)',
+          background: 'rgba(0,0,0,0.5)',
           backdropFilter: 'blur(5px)',
           zIndex: 1000,
           display: 'flex',
@@ -360,14 +379,14 @@ export default function Home() {
           }}>
             <button 
               onClick={() => setIsGuideOpen(false)}
-              style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1.5rem' }}
+              style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', color: 'var(--foreground)', cursor: 'pointer', fontSize: '1.5rem' }}
             >
               &times;
             </button>
             <h2 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               🛎️ TEST 문자 발송 시스템 가이드
             </h2>
-            <div style={{ lineHeight: '1.6', fontSize: '0.95rem', color: '#f8f9fa' }}>
+            <div style={{ lineHeight: '1.6', fontSize: '0.95rem', color: 'var(--foreground)' }}>
               <p>초보자도 클릭 몇 번이면 베테랑처럼 고객 문의에 답변할 수 있습니다. 아래의 3단계 흐름만 기억하세요!</p>
               
               <h3 style={{ marginTop: '20px', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '5px' }}>🚀 1분 컷 핵심 요약</h3>
@@ -379,7 +398,7 @@ export default function Home() {
 
               <h3 style={{ marginTop: '20px', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '5px' }}>🎬 상황별 실전 시나리오</h3>
               
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '8px', marginTop: '15px' }}>
+              <div style={{ background: 'transparent', padding: '15px', borderRadius: '8px', marginTop: '15px' }}>
                 <strong style={{ color: '#ffbeb8' }}>💡 [상황 1] 고객이 처음 전화로 문의했을 때</strong>
                 <ul style={{ paddingLeft: '20px', marginTop: '5px', listStyleType: 'circle' }}>
                   <li><strong>입력:</strong> <code>010-1234-5678</code> / <code>홍길동</code></li>
@@ -389,7 +408,7 @@ export default function Home() {
                 </ul>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '8px', marginTop: '15px' }}>
+              <div style={{ background: 'transparent', padding: '15px', borderRadius: '8px', marginTop: '15px' }}>
                 <strong style={{ color: '#ffd43b' }}>💡 [상황 2] 예전에 전화했던 단골 고객일 때</strong>
                 <ul style={{ paddingLeft: '20px', marginTop: '5px', listStyleType: 'circle' }}>
                   <li>고객 전화번호를 치는 순간 우측에 <strong>과거 상담 기록</strong>이 주르륵 뜹니다.</li>
@@ -397,7 +416,7 @@ export default function Home() {
                 </ul>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '8px', marginTop: '15px' }}>
+              <div style={{ background: 'transparent', padding: '15px', borderRadius: '8px', marginTop: '15px' }}>
                 <strong style={{ color: '#69db7c' }}>💡 [상황 3] 기상 악화 등 정보 수정이 필요할 때</strong>
                 <ul style={{ paddingLeft: '20px', marginTop: '5px', listStyleType: 'circle' }}>
                   <li>AI가 답변을 완성한 후에도 마우스로 클릭해 <strong>텍스트를 자유롭게 수정</strong>할 수 있습니다.</li>
@@ -420,35 +439,35 @@ export default function Home() {
         {/* Step 1: 고객 정보 카드 */}
         <section className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
           <h2 className="card-title">
-            <span style={{ background: 'var(--bubble-ai)', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.9rem', marginRight: '8px' }}>1</span>
+            <span style={{ background: 'var(--bubble-ai)', color: 'var(--foreground)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.9rem', marginRight: '8px' }}>1</span>
             고객 정보 조회 및 등록
           </h2>
           
           <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>수신자 전화번호 (필수)</label>
+            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', opacity: 0.7 }}>수신자 전화번호 (필수)</label>
             <input
               type="tel"
               className="input-field"
               placeholder="- 없이 숫자만 입력"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '1rem', outline: 'none' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'var(--foreground)', fontSize: '1rem', outline: 'none' }}
             />
           </div>
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>고객명 (선택)</label>
+            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', opacity: 0.7 }}>고객명 (선택)</label>
             <input
               type="text"
               className="input-field"
               placeholder="예: 홍길동"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '1rem', outline: 'none' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'var(--foreground)', fontSize: '1rem', outline: 'none' }}
             />
           </div>
 
           <div style={{ flex: 1, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '15px', overflowY: 'auto' }}>
-            <h3 style={{ fontSize: '1rem', marginBottom: '10px', color: '#fff' }}>과거 문의 내역</h3>
+            <h3 style={{ fontSize: '1rem', marginBottom: '10px', color: 'var(--foreground)' }}>과거 문의 내역</h3>
             {isFetchingHistory && <div className="spinner" style={{ margin: '0 auto' }}></div>}
             {historyError && <div style={{ color: '#ff6b6b', fontSize: '0.85rem' }}>{historyError}</div>}
             
@@ -458,11 +477,11 @@ export default function Home() {
             
             {!isFetchingHistory && customerHistory.map((item, idx) => (
               <div key={idx} style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px', marginBottom: '10px', fontSize: '0.85rem' }}>
-                <div style={{ color: '#aaa', marginBottom: '4px', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ opacity: 0.6, marginBottom: '4px', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
                   <span>{new Date(item.sentAt).toLocaleString()}</span>
                   {item.employeeEmail && <span style={{ background: 'rgba(52, 152, 219, 0.2)', color: '#3498db', padding: '2px 6px', borderRadius: '4px' }}>담당: {item.employeeEmail.split('@')[0]}</span>}
                 </div>
-                <div style={{ color: '#fff', marginBottom: '6px' }}><strong>Q:</strong> {item.question}</div>
+                <div style={{ color: 'var(--foreground)', marginBottom: '6px' }}><strong>Q:</strong> {item.question}</div>
                 <div style={{ color: '#8ab4f8' }}><strong>A:</strong> {item.answer.substring(0, 50)}...</div>
               </div>
             ))}
@@ -472,15 +491,15 @@ export default function Home() {
         {/* Step 2: 문자 생성 카드 */}
         <section className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
           <h2 className="card-title">
-            <span style={{ background: 'var(--bubble-ai)', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.9rem', marginRight: '8px' }}>2</span>
+            <span style={{ background: 'var(--bubble-ai)', color: 'var(--foreground)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.9rem', marginRight: '8px' }}>2</span>
             AI 답변 생성
           </h2>
 
-          <p style={{ fontSize: '0.9rem', color: '#ccc', marginBottom: '15px' }}>
+          <p style={{ fontSize: '0.9rem', opacity: 0.7, marginBottom: '15px' }}>
             고객의 질문 내용을 간략히 입력하시면, AI가 사내 규정을 검색하여 최적의 답변을 생성합니다.
           </p>
           
-          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>고객 질문 내용 (필수)</label>
+          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', opacity: 0.7 }}>고객 질문 내용 (필수)</label>
           <textarea 
             className="input-area"
             style={{ flex: 1, minHeight: '150px' }}
@@ -516,12 +535,12 @@ export default function Home() {
         {/* Step 3: 최종 발송 카드 */}
         <section className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
           <h2 className="card-title">
-            <span style={{ background: 'var(--bubble-ai)', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.9rem', marginRight: '8px' }}>3</span>
+            <span style={{ background: 'var(--bubble-ai)', color: 'var(--foreground)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.9rem', marginRight: '8px' }}>3</span>
             검토 및 발송
           </h2>
           
           <div style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', marginBottom: '15px' }}>
-            <div style={{ fontSize: '0.9rem', color: '#ccc', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ fontSize: '0.9rem', opacity: 0.7, display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span>수신자: {customerName ? `${customerName} 님` : '이름 미상'}</span>
               <span>{phoneNumber || '연락처 미입력'}</span>
             </div>
@@ -530,7 +549,7 @@ export default function Home() {
             </div>
           </div>
 
-          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>발송할 내용 (수정 가능)</label>
+          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', opacity: 0.7 }}>발송할 내용 (수정 가능)</label>
           <textarea 
             className="input-area"
             style={{ flex: 1, minHeight: '200px', borderColor: generatedMessage ? 'var(--bubble-ai)' : 'rgba(0,0,0,0.1)' }}
@@ -545,7 +564,7 @@ export default function Home() {
               fontSize: '0.9rem',
               padding: '12px',
               borderRadius: '8px',
-              background: 'rgba(0,0,0,0.2)',
+              background: 'transparent',
               marginBottom: '15px',
               textAlign: 'center'
             }}>
