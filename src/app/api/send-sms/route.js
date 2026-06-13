@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { SolapiMessageService } from 'solapi';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import path from 'path';
+import fs from 'fs';
 
 export const runtime = "nodejs";
 
@@ -14,6 +18,25 @@ if (apiKey && apiSecret) {
   console.error("Solapi SMS service is not configured. Please check SOLAPI_API_KEY and SOLAPI_API_SECRET environment variables.");
 }
 
+// Firebase Admin Initialization (For logging)
+const serviceAccountPath = path.resolve(process.cwd(), 'service-account.json');
+if (fs.existsSync(serviceAccountPath)) {
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccountPath;
+}
+
+if (!getApps().length) {
+  try {
+    if (fs.existsSync(serviceAccountPath)) {
+      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+      initializeApp({ credential: cert(serviceAccount) });
+    } else {
+      initializeApp();
+    }
+  } catch (error) {
+    console.error("Firebase Admin Initialization Error:", error);
+  }
+}
+
 export async function POST(request) {
   if (!messageService || !fromNumber) {
     console.error("Solapi SMS service is not configured. Please check environment variables (SOLAPI_API_KEY, SOLAPI_API_SECRET, SOLAPI_FROM_NUMBER).");
@@ -21,13 +44,13 @@ export async function POST(request) {
   }
 
   try {
-    const { to, text } = await request.json();
+    const { to, text, customerName, question } = await request.json();
 
     if (!to || !text) {
-      return NextResponse.json({ success: false, error: '수신 번호와 내용을 모두 입력해주세요.' }, { status: 400 });
+      return NextResponse.json({ success: false, error: '수신 번호와 내용 모두 입력해주세요.' }, { status: 400 });
     }
     
-    // 전화번호 형식 검증 (숫자만 남김)
+    // 전화번호 양식 검사 (숫자만 추출)
     const cleanTo = String(to).replace(/[^0-9]/g, '');
     const phoneRegex = /^01([0|1|6|7|8|9])([0-9]{3,4})([0-9]{4})$/;
     
@@ -39,12 +62,29 @@ export async function POST(request) {
         return NextResponse.json({ success: false, error: '문자 내용이 너무 깁니다.' }, { status: 400 });
     }
 
-    // 솔라피를 통한 문자 발송
+    // 1. 쏠라피를 통한 실제 문자 발송
     const result = await messageService.send({
         to: cleanTo,
         from: fromNumber,
         text: text,
     });
+
+    // 2. 발송 성공 시 Firestore DB에 저장 (sms_history 컬렉션)
+    try {
+      if (getApps().length) {
+        const db = getFirestore();
+        await db.collection('sms_history').add({
+          phoneNumber: cleanTo,
+          customerName: customerName || '미상',
+          question: question || '미입력',
+          answer: text,
+          sentAt: FieldValue.serverTimestamp()
+        });
+      }
+    } catch (dbError) {
+      console.warn("Firestore 기록 실패 (권한 또는 비활성화 상태):", dbError.message);
+      // DB 저장이 실패해도 발송 자체는 성공했으므로 에러로 처리하지 않음
+    }
 
     return NextResponse.json({ success: true, result });
   } catch (e) {

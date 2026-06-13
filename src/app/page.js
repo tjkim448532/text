@@ -81,7 +81,9 @@ export default function Home() {
         },
         body: JSON.stringify({
           to: phoneNumber,
-          text: generatedMessage
+          text: generatedMessage,
+          customerName: customerName,
+          question: question
         }),
       });
 
