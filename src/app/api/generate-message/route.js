@@ -5,18 +5,40 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
-// 1. Firebase Admin Initialization (For logging)
-const serviceAccountPath = path.resolve(process.cwd(), 'service-account.json');
-if (fs.existsSync(serviceAccountPath)) {
-  process.env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccountPath;
+// 1. Firebase Admin & Vertex ADC Initialization
+const projectId = process.env.GOOGLE_CLOUD_PROJECT || 'text-7d7c6';
+
+// 로컬 환경: service-account.json 파일이 있으면 사용
+const localServiceAccountPath = path.resolve(process.cwd(), 'service-account.json');
+let credentialConfig = null;
+
+if (fs.existsSync(localServiceAccountPath)) {
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = localServiceAccountPath;
+  credentialConfig = cert(JSON.parse(fs.readFileSync(localServiceAccountPath, 'utf8')));
+} 
+// 클라우드 환경 (App Hosting): 환경변수로 전달된 키를 임시 파일로 만들어 ADC에 주입
+else if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
+  const serviceAccount = {
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    private_key: privateKey,
+    project_id: projectId
+  };
+  
+  // Vertex AI SDK가 읽을 수 있도록 임시 파일 생성
+  const tmpPath = path.join(os.tmpdir(), 'vertex-adc.json');
+  fs.writeFileSync(tmpPath, JSON.stringify(serviceAccount));
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = tmpPath;
+  
+  credentialConfig = cert(serviceAccount);
 }
 
 if (!getApps().length) {
   try {
-    if (fs.existsSync(serviceAccountPath)) {
-      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-      initializeApp({ credential: cert(serviceAccount) });
+    if (credentialConfig) {
+      initializeApp({ credential: credentialConfig });
     } else {
       initializeApp();
     }
@@ -25,31 +47,24 @@ if (!getApps().length) {
   }
 }
 
-// 2. AI & Pinecone Initialization
-const location = 'us-central1';
-const projectId = process.env.GOOGLE_CLOUD_PROJECT || 'text-7d7c6';
-
-// 2. AI Initialization is moved inside POST handler to ensure env vars are loaded.
-
 export async function POST(request) {
   try {
     const pc = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY || 'MISSING_KEY'
     });
     
-    // Use Gemini API Key if available, otherwise fallback to Vertex AI ADC
-    const ai = new GoogleGenAI(
-      process.env.GEMINI_API_KEY 
-        ? { apiKey: process.env.GEMINI_API_KEY } 
-        : { vertexai: { project: projectId, location: 'us-central1' } }
-    );
+    // 무조건 Vertex AI 사용 (text-embedding-004 지원을 위해)
+    const ai = new GoogleGenAI({ 
+      vertexai: { project: projectId, location: 'us-central1' } 
+    });
+    
     const { question, customerName, phoneNumber } = await request.json();
 
     if (!question) {
       return NextResponse.json({ error: '고객 질문 내용을 입력해주세요.' }, { status: 400 });
     }
 
-    // [RAG 1단계] 질문 텍스트를 벡터로 변환 (Embedding)
+    // [RAG 1단계] 질문 텍스트를 벡터로 변환 (Embedding - 768 dimensions)
     const embedResponse = await ai.models.embedContent({
       model: 'text-embedding-004',
       contents: question,
@@ -92,13 +107,13 @@ ${retrievedContexts || '검색된 관련 규정이 없습니다.'}
       contents: question,
       config: {
         systemInstruction: systemPrompt,
-        temperature: 0.3, // RAG를 위해 온도를 낮춰 사실 기반 답변 유도
+        temperature: 0.3,
       }
     });
 
     const generatedMessage = response.text;
 
-    // Optional: Save to Firestore (에러 발생해도 API는 정상 응답하도록 처리)
+    // Optional: Save to Firestore
     try {
       if (getApps().length) {
         const db = getFirestore();
@@ -111,20 +126,13 @@ ${retrievedContexts || '검색된 관련 규정이 없습니다.'}
         });
       }
     } catch (dbError) {
-      console.warn("Firestore 저장 실패 (기능 비활성화 상태일 수 있음):", dbError.message);
+      console.warn("Firestore 저장 실패:", dbError.message);
     }
 
     return NextResponse.json({ result: generatedMessage });
   } catch (error) {
     console.error('Error generating message:', error);
     
-    if (error.message && error.message.includes('Vertex AI API has not been used')) {
-      return NextResponse.json({ 
-        error: 'Vertex AI API가 활성화되지 않았습니다. Google Cloud Console에서 활성화해주세요.',
-        details: error.message 
-      }, { status: 500 });
-    }
-
     return NextResponse.json({ 
       error: 'AI 답변 생성에 실패했습니다. 관리자에게 문의하세요.',
       details: error.message 
