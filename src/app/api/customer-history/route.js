@@ -19,6 +19,10 @@ export async function GET(request) {
 
     const cleanPhone = String(phone).replace(/[^0-9]/g, '');
 
+    if (cleanPhone.length < 8) {
+      return NextResponse.json({ success: true, history: [] });
+    }
+
     const db = getAdminDb();
     const historyRef = db.collection('sms_history');
     

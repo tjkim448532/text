@@ -44,19 +44,25 @@ export default function Home() {
 
   // === Effects ===
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setIsAuthLoading(false);
+      
+      if (currentUser) {
+        try {
+          const token = await currentUser.getIdToken();
+          const res = await fetch('/api/config', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+          setFromNumber(data.fromNumber || '미등록');
+        } catch (e) {
+          setFromNumber('불러오기 실패');
+        }
+      }
     });
-    return () => unsubscribe();
-  }, []);
 
-  useEffect(() => {
-    // 발신 번호 불러오기
-    fetch('/api/config')
-      .then(res => res.json())
-      .then(data => setFromNumber(data.fromNumber || '미등록'))
-      .catch(() => setFromNumber('불러오기 실패'));
+    return () => unsubscribe();
   }, []);
 
   // 전화번호가 변경될 때마다 10자리 이상이면 자동 조회 (Debounce 적용)
