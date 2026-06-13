@@ -69,7 +69,38 @@ export async function POST(request) {
 ${retrievedContexts || '검색된 관련 규정이 없습니다.'}
 `;
 
-    // 문장 생성 (스트리밍)
+    // 클라이언트가 스트리밍을 지원하는지 확인 (캐시된 구버전 프론트엔드 호환성)
+    const acceptHeader = request.headers.get('accept') || '';
+    const supportsStreaming = acceptHeader.includes('text/event-stream');
+
+    if (!supportsStreaming) {
+      // [구버전 호환] 전체 답변 대기 후 JSON 반환
+      const response = await ai.models.generateContent({
+        model: 'gemini-flash-latest',
+        contents: question,
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.3,
+        }
+      });
+      
+      const generatedMessage = response.text;
+      
+      try {
+        const db = getAdminDb();
+        db.collection('generated_messages').add({
+          customerName: customerName || '미상',
+          phoneNumber: phoneNumber || '미입력',
+          question: question,
+          generatedMessage: generatedMessage,
+          createdAt: FieldValue.serverTimestamp()
+        }).catch(dbError => console.warn("Firestore 기록 실패:", dbError.message));
+      } catch (error) {}
+
+      return NextResponse.json({ result: generatedMessage });
+    }
+
+    // [신버전] 문장 생성 (스트리밍)
     const responseStream = await ai.models.generateContentStream({
       model: 'gemini-flash-latest',
       contents: question,
