@@ -17,24 +17,6 @@ let credentialConfig = null;
 if (fs.existsSync(localServiceAccountPath)) {
   process.env.GOOGLE_APPLICATION_CREDENTIALS = localServiceAccountPath;
   credentialConfig = cert(JSON.parse(fs.readFileSync(localServiceAccountPath, 'utf8')));
-} 
-// 클라우드 환경 (App Hosting): 환경변수로 전달된 키를 임시 파일로 만들어 ADC에 주입
-else if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
-  const extractedProjectId = process.env.FIREBASE_CLIENT_EMAIL.split('@')[1].split('.')[0];
-  
-  const serviceAccount = {
-    client_email: process.env.FIREBASE_CLIENT_EMAIL,
-    private_key: privateKey,
-    project_id: extractedProjectId
-  };
-  
-  // Vertex AI SDK가 읽을 수 있도록 임시 파일 생성
-  const tmpPath = path.join(os.tmpdir(), 'vertex-adc.json');
-  fs.writeFileSync(tmpPath, JSON.stringify(serviceAccount));
-  process.env.GOOGLE_APPLICATION_CREDENTIALS = tmpPath;
-  
-  credentialConfig = cert(serviceAccount);
 }
 
 if (!getApps().length) {
@@ -55,36 +37,25 @@ export async function POST(request) {
       apiKey: process.env.PINECONE_API_KEY || 'MISSING_KEY'
     });
     
-    // 무조건 Vertex AI 사용 (text-embedding-004 지원을 위해)
-    // 환경 변수에 GEMINI_API_KEY가 있으면 Vertex AI가 API Key를 쓰려고 시도하여 401 에러가 나므로 삭제합니다.
-    if (process.env.GEMINI_API_KEY) {
-      delete process.env.GEMINI_API_KEY;
-    }
-    
-    // FIREBASE_CLIENT_EMAIL에서 동적으로 Vertex AI용 project ID 추출 (예: belleforetcs)
-    const vertexProjectId = process.env.FIREBASE_CLIENT_EMAIL 
-      ? process.env.FIREBASE_CLIENT_EMAIL.split('@')[1].split('.')[0] 
-      : projectId;
-      
+    // Vertex AI 대신 일반 Gemini API (AI Studio) 사용 (기존 카카오톡 앱과 동일한 로직)
     const ai = new GoogleGenAI({ 
-      vertexai: true, 
-      project: vertexProjectId, 
-      location: 'us-central1' 
+      apiKey: process.env.GEMINI_API_KEY || 'MISSING_KEY'
     });
-    
+
     const { question, customerName, phoneNumber } = await request.json();
 
     if (!question) {
       return NextResponse.json({ error: '고객 질문 내용을 입력해주세요.' }, { status: 400 });
     }
 
-    // [RAG 1단계] 질문 텍스트를 벡터로 변환 (Embedding - 768 dimensions)
+    // [RAG 1단계] 질문 텍스트를 벡터로 변환 (기존 카카오톡 앱과 완벽히 동일한 모델과 차원 사용)
     const embedResponse = await ai.models.embedContent({
-      model: 'text-embedding-004',
+      model: 'gemini-embedding-001',
       contents: question,
     });
     
-    const vector = embedResponse.embeddings[0].values;
+    // Pinecone 인덱스가 768차원이므로, 768차원으로 잘라서 반환 (MRL)
+    const vector = embedResponse.embeddings[0].values.slice(0, 768);
 
     // [RAG 2단계] Pinecone에서 관련 FAQ 검색
     const index = pc.index(process.env.PINECONE_INDEX_NAME || 'belleforet-cs');
