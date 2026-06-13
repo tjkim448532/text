@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import path from 'path';
 import fs from 'fs';
 
@@ -22,6 +23,23 @@ if (!getApps().length) {
 const db = getFirestore();
 
 export async function GET(request) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  try {
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await getAuth().verifyIdToken(token);
+    
+    // Only allow admin email
+    if (decodedToken.email !== 'admin@test.com') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  } catch (error) {
+    return NextResponse.json({ error: 'Invalid Token' }, { status: 401 });
+  }
+
   try {
     const snapshot = await db.collection('sms_history')
       .orderBy('sentAt', 'desc')

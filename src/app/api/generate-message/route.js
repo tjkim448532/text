@@ -3,6 +3,7 @@ import { GoogleGenAI } from '@google/genai';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
@@ -32,6 +33,18 @@ if (!getApps().length) {
 }
 
 export async function POST(request) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  try {
+    const token = authHeader.split('Bearer ')[1];
+    await getAuth().verifyIdToken(token);
+  } catch (error) {
+    return NextResponse.json({ error: 'Invalid Token' }, { status: 401 });
+  }
+
   try {
     const pc = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY || 'MISSING_KEY'
@@ -58,7 +71,11 @@ export async function POST(request) {
     const vector = embedResponse.embeddings[0].values.slice(0, 768);
 
     // [RAG 2단계] Pinecone에서 관련 FAQ 검색
-    const index = pc.index(process.env.PINECONE_INDEX_NAME || 'belleforet-cs');
+    const indexName = process.env.PINECONE_INDEX_NAME;
+    if (!indexName) {
+      throw new Error('PINECONE_INDEX_NAME 환경 변수가 설정되지 않았습니다.');
+    }
+    const index = pc.index(indexName);
     const queryRes = await index.query({
       topK: 3,
       vector: vector,

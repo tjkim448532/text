@@ -35,7 +35,8 @@ export default function AdminPage() {
   const fetchHistory = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/admin/history');
+      const token = await auth.currentUser?.getIdToken();
+      const res = await fetch('/api/admin/history', { headers: { Authorization: Bearer  } });
       const data = await res.json();
       if (res.ok) {
         setHistory(data.history);

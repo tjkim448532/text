@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import path from 'path';
 import fs from 'fs';
 
@@ -26,6 +27,18 @@ if (!getApps().length) {
 }
 
 export async function GET(request) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  try {
+    const token = authHeader.split('Bearer ')[1];
+    await getAuth().verifyIdToken(token);
+  } catch (error) {
+    return NextResponse.json({ success: false, error: 'Invalid Token' }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const phone = searchParams.get('phone');

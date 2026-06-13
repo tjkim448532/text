@@ -59,11 +59,14 @@ export default function Home() {
       .catch(() => setFromNumber('불러오기 실패'));
   }, []);
 
-  // 전화번호가 변경될 때마다 10자리 이상이면 자동 조회
+  // 전화번호가 변경될 때마다 10자리 이상이면 자동 조회 (Debounce 적용)
   useEffect(() => {
     const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
     if (cleanPhone.length >= 10) {
-      fetchCustomerHistory(cleanPhone);
+      const timer = setTimeout(() => {
+        fetchCustomerHistory(cleanPhone);
+      }, 500); // 500ms 디바운스
+      return () => clearTimeout(timer);
     } else {
       setCustomerHistory([]);
       setHistoryError('');
@@ -135,9 +138,13 @@ export default function Home() {
     setSendStatus({ type: '', message: '' });
     
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/generate-message', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: Bearer 
+        },
         body: JSON.stringify({ 
           question, 
           customerName, 
@@ -174,9 +181,13 @@ export default function Home() {
     setSendStatus({ type: '', message: '' });
 
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/send-sms', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: Bearer 
+        },
         body: JSON.stringify({
           to: phoneNumber,
           text: generatedMessage,

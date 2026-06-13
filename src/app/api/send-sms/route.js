@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { SolapiMessageService } from 'solapi';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import path from 'path';
 import fs from 'fs';
 
@@ -38,6 +39,18 @@ if (!getApps().length) {
 }
 
 export async function POST(request) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  try {
+    const token = authHeader.split('Bearer ')[1];
+    await getAuth().verifyIdToken(token);
+  } catch (error) {
+    return NextResponse.json({ success: false, error: 'Invalid Token' }, { status: 401 });
+  }
+
   if (!messageService || !fromNumber) {
     console.error("Solapi SMS service is not configured. Please check environment variables (SOLAPI_API_KEY, SOLAPI_API_SECRET, SOLAPI_FROM_NUMBER).");
     return NextResponse.json({ success: false, error: 'SMS service is not configured on the server.' }, { status: 500 });
@@ -47,15 +60,15 @@ export async function POST(request) {
     const { to, text, customerName, question, employeeEmail } = await request.json();
 
     if (!to || !text) {
-      return NextResponse.json({ success: false, error: '수신 번호와 내용 모두 입력해주세요.' }, { status: 400 });
+      return NextResponse.json({ success: false, error: '수신 번호와 내용을 모두 입력해주세요.' }, { status: 400 });
     }
     
-    // 전화번호 양식 검사 (숫자만 추출)
+    // 전화번호 숫자만 추출
     const cleanTo = String(to).replace(/[^0-9]/g, '');
-    const phoneRegex = /^01([0|1|6|7|8|9])([0-9]{3,4})([0-9]{4})$/;
     
-    if (!phoneRegex.test(cleanTo)) {
-        return NextResponse.json({ success: false, error: '올바른 휴대폰 번호 형식이 아닙니다.' }, { status: 400 });
+    // 길이는 최소 8자리 (예: 1588-1234) 최대 11자리
+    if (cleanTo.length < 8 || cleanTo.length > 11) {
+        return NextResponse.json({ success: false, error: '올바른 전화번호 형식이 아닙니다.' }, { status: 400 });
     }
 
     if (String(text).length > 2000) {
