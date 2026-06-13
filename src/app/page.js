@@ -1,21 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
-  const [notes, setNotes] = useState('');
+  const [question, setQuestion] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [fromNumber, setFromNumber] = useState('로딩 중...');
+  
   const [generatedMessage, setGeneratedMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
   // SMS 송신 상태
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sendStatus, setSendStatus] = useState({ type: '', message: '' });
 
+  useEffect(() => {
+    // 발신 번호 불러오기
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => setFromNumber(data.fromNumber || '미등록'))
+      .catch(() => setFromNumber('불러오기 실패'));
+  }, []);
+
   const handleGenerate = async () => {
-    if (!notes.trim()) {
-      setError('고객에게 보낼 내용을 메모 형식으로 입력해주세요.');
+    if (!question.trim()) {
+      setError('고객의 질문 내용을 입력해주세요.');
       return;
     }
 
@@ -29,7 +40,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ notes }),
+        body: JSON.stringify({ question, customerName, phoneNumber }),
       });
 
       const data = await response.json();
@@ -55,7 +66,7 @@ export default function Home() {
 
   const handleSendSms = async () => {
     if (!phoneNumber.trim()) {
-      setSendStatus({ type: 'error', message: '수신자 전화번호를 입력해주세요.' });
+      setSendStatus({ type: 'error', message: '수신자 전화번호를 좌측에 먼저 입력해주세요.' });
       return;
     }
 
@@ -89,10 +100,11 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    setNotes('');
+    setQuestion('');
+    setCustomerName('');
+    setPhoneNumber('');
     setGeneratedMessage('');
     setError('');
-    setPhoneNumber('');
     setSendStatus({ type: '', message: '' });
   };
 
@@ -100,7 +112,7 @@ export default function Home() {
     <div className="app-container">
       <header className="header">
         <h1>Blackstone Belle Foret</h1>
-        <p>AI 고객 안내 문자 생성 및 발송</p>
+        <p>AI CS 통합 문자 발송 시스템</p>
       </header>
 
       <main className="main-grid">
@@ -111,14 +123,59 @@ export default function Home() {
               <path d="M12 20h9"></path>
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
             </svg>
-            직원 메모 입력
+            고객 및 질문 정보 입력
           </h2>
           
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>고객명 (선택)</label>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="예: 홍길동"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(0,0,0,0.2)',
+                  color: 'white',
+                  fontSize: '1rem',
+                  outline: 'none'
+                }}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>수신자 전화번호 (필수)</label>
+              <input
+                type="tel"
+                className="input-field"
+                placeholder="- 없이 숫자만"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(0,0,0,0.2)',
+                  color: 'white',
+                  fontSize: '1rem',
+                  outline: 'none'
+                }}
+              />
+            </div>
+          </div>
+
+          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#ccc' }}>고객 질문 내용 (필수)</label>
           <textarea 
             className="input-area"
-            placeholder="고객 안내에 필요한 내용을 간단히 입력하세요. (예: 101호 고객, 수건 2장 추가 요청, 프론트에서 5분 내로 전달 예정)"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            style={{ minHeight: '120px' }}
+            placeholder="고객이 문의한 내용이나 상황을 입력하세요.&#13;&#10;(예: 수영장 이용 시간과 복장이 어떻게 되나요?)"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
           />
           
           {error && <div className="error-message">{error}</div>}
@@ -132,20 +189,20 @@ export default function Home() {
             {isLoading ? (
               <>
                 <div className="spinner"></div>
-                생성 중...
+                AI 답변 탐색 및 문자 생성 중...
               </>
             ) : (
               <>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
-                AI 문자 생성하기
+                AI 문자 답변 생성
               </>
             )}
           </button>
         </section>
 
-        {/* Right Side: Output Preview (iMessage style) */}
+        {/* Right Side: Output Preview */}
         <section className="glass-card">
           <h2 className="card-title">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -158,16 +215,14 @@ export default function Home() {
           <div className="chat-container">
             {!generatedMessage ? (
               <div className="placeholder-text">
-                메모를 입력하고 생성 버튼을 누르면<br/>여기에 완성된 문자가 표시됩니다.
+                고객의 질문을 입력하고 생성 버튼을 누르면<br/>FAQ 규정에 맞는 완벽한 답변이 표시됩니다.
               </div>
             ) : (
               <>
-                {/* Simulated Customer Message (Optional) */}
                 <div className="bubble bubble-received">
-                  {notes.substring(0, 50)}{notes.length > 50 ? '...' : ''}
+                  {question.substring(0, 50)}{question.length > 50 ? '...' : ''}
                 </div>
                 
-                {/* AI Generated Message */}
                 <div className="bubble bubble-sent">
                   {generatedMessage.split('\n').map((line, i) => (
                     <span key={i}>
@@ -176,24 +231,19 @@ export default function Home() {
                     </span>
                   ))}
                 </div>
-                <div className="timestamp">방금 전 생성됨</div>
+                <div className="timestamp">방금 전 AI(FAQ 기반)가 생성함</div>
 
                 <div className="sms-send-form" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <input
-                    type="tel"
-                    placeholder="수신자 전화번호 (- 없이 숫자만)"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    style={{
-                      padding: '12px',
-                      borderRadius: '8px',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      background: 'rgba(0,0,0,0.2)',
-                      color: 'white',
-                      fontSize: '1rem',
-                      outline: 'none'
-                    }}
-                  />
+                  <div style={{
+                    padding: '10px',
+                    borderRadius: '8px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    fontSize: '0.9rem',
+                    color: '#ddd'
+                  }}>
+                    <strong>발신 번호:</strong> {fromNumber}
+                  </div>
                   
                   {sendStatus.message && (
                     <div style={{
