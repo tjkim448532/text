@@ -29,20 +29,20 @@ if (!getApps().length) {
 const location = 'us-central1';
 const projectId = process.env.GOOGLE_CLOUD_PROJECT || 'text-7d7c6';
 
-let ai;
-try {
-  ai = new GoogleGenAI({ 
-    vertexai: { project: projectId, location: location }
-  });
-} catch (error) {
-  console.error("Error initializing GoogleGenAI:", error);
-}
+// 2. AI Initialization is moved inside POST handler to ensure env vars are loaded.
 
 export async function POST(request) {
   try {
     const pc = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY || 'MISSING_KEY'
     });
+    
+    // Use Gemini API Key if available, otherwise fallback to Vertex AI ADC
+    const ai = new GoogleGenAI(
+      process.env.GEMINI_API_KEY 
+        ? { apiKey: process.env.GEMINI_API_KEY } 
+        : { vertexai: { project: projectId, location: 'us-central1' } }
+    );
     const { question, customerName, phoneNumber } = await request.json();
 
     if (!question) {
