@@ -43,14 +43,12 @@ export async function GET(request) {
     const db = getFirestore();
     const historyRef = db.collection('sms_history');
     
-    // 전화번호 일치 조건, 최신순 정렬, 최대 10개
+    // 전화번호 일치 조건만으로 조회 (복합 색인 요구 에러 방지)
     const snapshot = await historyRef
       .where('phoneNumber', '==', cleanPhone)
-      .orderBy('sentAt', 'desc')
-      .limit(10)
       .get();
 
-    const history = [];
+    let history = [];
     snapshot.forEach(doc => {
       const data = doc.data();
       history.push({
@@ -58,9 +56,20 @@ export async function GET(request) {
         customerName: data.customerName,
         question: data.question,
         answer: data.answer,
-        sentAt: data.sentAt ? data.sentAt.toDate().toISOString() : null
+        sentAt: data.sentAt ? data.sentAt.toDate().getTime() : 0, // 밀리초로 변환하여 정렬용으로 사용
+        sentAtString: data.sentAt ? data.sentAt.toDate().toISOString() : null
       });
     });
+
+    // 메모리 상에서 최신순 정렬 후 10개 자르기
+    history.sort((a, b) => b.sentAt - a.sentAt);
+    history = history.slice(0, 10).map(item => ({
+      id: item.id,
+      customerName: item.customerName,
+      question: item.question,
+      answer: item.answer,
+      sentAt: item.sentAtString
+    }));
 
     return NextResponse.json({ success: true, history });
   } catch (error) {
