@@ -54,6 +54,11 @@ export async function POST(request) {
     });
     
     // 무조건 Vertex AI 사용 (text-embedding-004 지원을 위해)
+    // 환경 변수에 GEMINI_API_KEY가 있으면 Vertex AI가 API Key를 쓰려고 시도하여 401 에러가 나므로 삭제합니다.
+    if (process.env.GEMINI_API_KEY) {
+      delete process.env.GEMINI_API_KEY;
+    }
+    
     const ai = new GoogleGenAI({ 
       vertexai: { project: projectId, location: 'us-central1' } 
     });
