@@ -23,7 +23,10 @@ export default function AdminPage() {
       
       try {
         const token = await currentUser.getIdToken();
-        const roleRes = await fetch('/api/auth/role', { headers: { 'Authorization': `Bearer ${token}` } });
+        const roleRes = await fetch('/api/auth/role', { 
+          headers: { 'Authorization': `Bearer ${token}` },
+          cache: 'no-store'
+        });
         const roleData = await roleRes.json();
         
         if (roleData.role !== 'SUPER') {

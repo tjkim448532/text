@@ -59,7 +59,10 @@ export default function Home() {
             .catch(() => setFromNumber('불러오기 실패'));
 
           // Fetch user role
-          fetch('/api/auth/role', { headers: { 'Authorization': `Bearer ${token}` } })
+          fetch('/api/auth/role', { 
+            headers: { 'Authorization': `Bearer ${token}` },
+            cache: 'no-store'
+          })
             .then(res => res.json())
             .then(data => {
               setUserRole(data.role || 'USER');
@@ -317,7 +320,7 @@ export default function Home() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ fontSize: '0.85rem', opacity: 0.7, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginRight: '10px' }}>
-            <span style={{ color: 'var(--foreground)', fontWeight: 600 }}>{user.email}</span>
+            <span style={{ color: 'var(--foreground)', fontWeight: 600 }}>{user.email} <span style={{fontSize:'0.7rem', color:'gray'}}>({userRole})</span></span>
             <span style={{ cursor: 'pointer', color: '#3498db', marginTop: '4px' }} onClick={() => setIsPasswordChangeOpen(true)}>비밀번호 변경</span>
           </div>
           {userRole === 'SUPER' && (
