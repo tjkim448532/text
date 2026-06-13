@@ -21,10 +21,12 @@ if (fs.existsSync(localServiceAccountPath)) {
 // 클라우드 환경 (App Hosting): 환경변수로 전달된 키를 임시 파일로 만들어 ADC에 주입
 else if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
   const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
+  const extractedProjectId = process.env.FIREBASE_CLIENT_EMAIL.split('@')[1].split('.')[0];
+  
   const serviceAccount = {
     client_email: process.env.FIREBASE_CLIENT_EMAIL,
     private_key: privateKey,
-    project_id: projectId
+    project_id: extractedProjectId
   };
   
   // Vertex AI SDK가 읽을 수 있도록 임시 파일 생성
@@ -59,8 +61,15 @@ export async function POST(request) {
       delete process.env.GEMINI_API_KEY;
     }
     
+    // FIREBASE_CLIENT_EMAIL에서 동적으로 Vertex AI용 project ID 추출 (예: belleforetcs)
+    const vertexProjectId = process.env.FIREBASE_CLIENT_EMAIL 
+      ? process.env.FIREBASE_CLIENT_EMAIL.split('@')[1].split('.')[0] 
+      : projectId;
+      
     const ai = new GoogleGenAI({ 
-      vertexai: { project: projectId, location: 'us-central1' } 
+      vertexai: true, 
+      project: vertexProjectId, 
+      location: 'us-central1' 
     });
     
     const { question, customerName, phoneNumber } = await request.json();
