@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { app, auth } from '../lib/firebase';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from 'firebase/auth';
 
 export default function Home() {
+  const router = useRouter();
+  
   // === Auth State ===
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState('USER');
