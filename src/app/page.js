@@ -78,7 +78,7 @@ export default function Home() {
     try {
       await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
     } catch (err) {
-      setLoginError('로그인 실패: 이메일과 비밀번호를 확인해주세요.');
+      setLoginError(`로그인 실패: ${err.message}`);
     } finally {
       setIsLoggingIn(false);
     }
