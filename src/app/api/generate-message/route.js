@@ -88,7 +88,7 @@ ${retrievedContexts || '검색된 관련 규정이 없습니다.'}
 
     // 답변 생성
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-flash-latest',
       contents: question,
       config: {
         systemInstruction: systemPrompt,
