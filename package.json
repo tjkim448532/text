@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@google/genai": "^2.8.0",
     "firebase-admin": "^14.0.0"
   }
 }
