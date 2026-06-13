@@ -3,17 +3,26 @@ import { GoogleGenAI } from '@google/genai';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import path from 'path';
+import fs from 'fs';
 
-// Set credentials for Vertex AI
-process.env.GOOGLE_APPLICATION_CREDENTIALS = path.resolve(process.cwd(), 'service-account.json');
+// Use service account if it exists (local development)
+const serviceAccountPath = path.resolve(process.cwd(), 'service-account.json');
+if (fs.existsSync(serviceAccountPath)) {
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccountPath;
+}
 
-// Initialize Firebase Admin
+// Initialize Firebase Admin gracefully
 if (!getApps().length) {
   try {
-    const serviceAccount = require('../../../../service-account.json');
-    initializeApp({
-      credential: cert(serviceAccount)
-    });
+    if (fs.existsSync(serviceAccountPath)) {
+      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+      initializeApp({
+        credential: cert(serviceAccount)
+      });
+    } else {
+      // Use Application Default Credentials (Firebase App Hosting / Cloud Run environment)
+      initializeApp();
+    }
   } catch (error) {
     console.error("Firebase Admin Initialization Error:", error);
   }
