@@ -1,42 +1,12 @@
 import { NextResponse } from 'next/server';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
-import path from 'path';
-import fs from 'fs';
+import { verifyAuth, getAdminDb } from '@/lib/firebase-admin';
 
 export const runtime = "nodejs";
 
-// Firebase Admin Initialization
-const serviceAccountPath = path.resolve(process.cwd(), 'service-account.json');
-if (fs.existsSync(serviceAccountPath)) {
-  process.env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccountPath;
-}
-
-if (!getApps().length) {
-  try {
-    if (fs.existsSync(serviceAccountPath)) {
-      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-      initializeApp({ credential: cert(serviceAccount) });
-    } else {
-      initializeApp();
-    }
-  } catch (error) {
-    console.error("Firebase Admin Initialization Error:", error);
-  }
-}
-
 export async function GET(request) {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
-  
-  try {
-    const token = authHeader.split('Bearer ')[1];
-    await getAuth().verifyIdToken(token);
-  } catch (error) {
-    return NextResponse.json({ success: false, error: 'Invalid Token' }, { status: 401 });
+  const authResult = await verifyAuth(request);
+  if (authResult.status !== 200) {
+    return NextResponse.json({ success: false, error: authResult.error }, { status: authResult.status });
   }
 
   try {
@@ -49,11 +19,7 @@ export async function GET(request) {
 
     const cleanPhone = String(phone).replace(/[^0-9]/g, '');
 
-    if (!getApps().length) {
-      return NextResponse.json({ success: false, error: 'DB 서비스가 준비되지 않았습니다.' }, { status: 500 });
-    }
-
-    const db = getFirestore();
+    const db = getAdminDb();
     const historyRef = db.collection('sms_history');
     
     // 복합 색인이 생성되었으므로 DB 레벨에서 정렬 및 제한(Limit) 처리하여 과금 방지

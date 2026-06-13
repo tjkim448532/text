@@ -1,48 +1,15 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { Pinecone } from '@pinecone-database/pinecone';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
-import path from 'path';
-import fs from 'fs';
-import os from 'os';
+import { verifyAuth, getAdminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
-// 1. Firebase Admin & Vertex ADC Initialization
-const projectId = process.env.GOOGLE_CLOUD_PROJECT || 'text-7d7c6';
-
-// 로컬 환경: service-account.json 파일이 있으면 사용
-const localServiceAccountPath = path.resolve(process.cwd(), 'service-account.json');
-let credentialConfig = null;
-
-if (fs.existsSync(localServiceAccountPath)) {
-  process.env.GOOGLE_APPLICATION_CREDENTIALS = localServiceAccountPath;
-  credentialConfig = cert(JSON.parse(fs.readFileSync(localServiceAccountPath, 'utf8')));
-}
-
-if (!getApps().length) {
-  try {
-    if (credentialConfig) {
-      initializeApp({ credential: credentialConfig });
-    } else {
-      initializeApp();
-    }
-  } catch (error) {
-    console.error("Firebase Admin Initialization Error:", error);
-  }
-}
+export const runtime = "nodejs";
 
 export async function POST(request) {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  
-  try {
-    const token = authHeader.split('Bearer ')[1];
-    await getAuth().verifyIdToken(token);
-  } catch (error) {
-    return NextResponse.json({ error: 'Invalid Token' }, { status: 401 });
+  const authResult = await verifyAuth(request);
+  if (authResult.status !== 200) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
   }
 
   try {
@@ -50,7 +17,6 @@ export async function POST(request) {
       apiKey: process.env.PINECONE_API_KEY || 'MISSING_KEY'
     });
     
-    // Vertex AI 대신 일반 Gemini API (AI Studio) 사용 (기존 카카오톡 앱과 동일한 로직)
     const ai = new GoogleGenAI({ 
       apiKey: process.env.GEMINI_API_KEY || 'MISSING_KEY'
     });
@@ -115,20 +81,18 @@ ${retrievedContexts || '검색된 관련 규정이 없습니다.'}
 
     const generatedMessage = response.text;
 
-    // Optional: Save to Firestore
+    // Optional: Save to Firestore (백그라운드 실행으로 속도 개선)
     try {
-      if (getApps().length) {
-        const db = getFirestore();
-        await db.collection('generated_messages').add({
-          customerName: customerName || '미상',
-          phoneNumber: phoneNumber || '미입력',
-          question: question,
-          generatedMessage: generatedMessage,
-          createdAt: FieldValue.serverTimestamp()
-        });
-      }
-    } catch (dbError) {
-      console.warn("Firestore 저장 실패:", dbError.message);
+      const db = getAdminDb();
+      db.collection('generated_messages').add({
+        customerName: customerName || '미상',
+        phoneNumber: phoneNumber || '미입력',
+        question: question,
+        generatedMessage: generatedMessage,
+        createdAt: FieldValue.serverTimestamp()
+      }).catch(dbError => console.warn("Firestore 기록 실패:", dbError.message));
+    } catch (error) {
+      // 무시
     }
 
     return NextResponse.json({ result: generatedMessage });

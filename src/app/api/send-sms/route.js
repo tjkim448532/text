@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { SolapiMessageService } from 'solapi';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
-import path from 'path';
-import fs from 'fs';
+import { verifyAuth, getAdminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export const runtime = "nodejs";
 
@@ -19,36 +16,10 @@ if (apiKey && apiSecret) {
   console.error("Solapi SMS service is not configured. Please check SOLAPI_API_KEY and SOLAPI_API_SECRET environment variables.");
 }
 
-// Firebase Admin Initialization (For logging)
-const serviceAccountPath = path.resolve(process.cwd(), 'service-account.json');
-if (fs.existsSync(serviceAccountPath)) {
-  process.env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccountPath;
-}
-
-if (!getApps().length) {
-  try {
-    if (fs.existsSync(serviceAccountPath)) {
-      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-      initializeApp({ credential: cert(serviceAccount) });
-    } else {
-      initializeApp();
-    }
-  } catch (error) {
-    console.error("Firebase Admin Initialization Error:", error);
-  }
-}
-
 export async function POST(request) {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
-  
-  try {
-    const token = authHeader.split('Bearer ')[1];
-    await getAuth().verifyIdToken(token);
-  } catch (error) {
-    return NextResponse.json({ success: false, error: 'Invalid Token' }, { status: 401 });
+  const authResult = await verifyAuth(request);
+  if (authResult.status !== 200) {
+    return NextResponse.json({ success: false, error: authResult.error }, { status: authResult.status });
   }
 
   if (!messageService || !fromNumber) {
@@ -82,19 +53,17 @@ export async function POST(request) {
         text: text,
     });
 
-    // 2. 발송 성공 시 Firestore DB에 저장 (sms_history 컬렉션)
+    // 2. 발송 성공 시 Firestore DB에 저장(sms_history 컬렉션)
     try {
-      if (getApps().length) {
-        const db = getFirestore();
-        await db.collection('sms_history').add({
-          phoneNumber: cleanTo,
-          customerName: customerName || '미상',
-          question: question || '미입력',
-          answer: text,
-          employeeEmail: employeeEmail || '알수없음',
-          sentAt: FieldValue.serverTimestamp()
-        });
-      }
+      const db = getAdminDb();
+      await db.collection('sms_history').add({
+        phoneNumber: cleanTo,
+        customerName: customerName || '미상',
+        question: question || '미입력',
+        answer: text,
+        employeeEmail: employeeEmail || '알수없음',
+        sentAt: FieldValue.serverTimestamp()
+      });
     } catch (dbError) {
       console.warn("Firestore 기록 실패 (권한 또는 비활성화 상태):", dbError.message);
       // DB 저장이 실패해도 발송 자체는 성공했으므로 에러로 처리하지 않음
