@@ -589,10 +589,10 @@ export default function Home() {
             <button 
               className="btn-primary" 
               onClick={handleSendSms}
-              disabled={isSending || !generatedMessage}
-              style={{ flex: 2, padding: '18px 24px', background: !generatedMessage ? 'rgba(255,255,255,0.1)' : '#34c759' }}
+              disabled={isSending || !generatedMessage || sendStatus.type === 'success'}
+              style={{ flex: 2, padding: '18px 24px', background: (!generatedMessage || sendStatus.type === 'success') ? 'rgba(255,255,255,0.1)' : '#34c759' }}
             >
-              {isSending ? '발송 처리 중...' : '🚀 최종 발송하기'}
+              {isSending ? '발송 처리 중...' : (sendStatus.type === 'success' ? '✔ 발송 완료' : '🚀 최종 발송하기')}
             </button>
             <button className="btn-secondary" onClick={handleReset} style={{ flex: 1 }}>
               내용 초기화
