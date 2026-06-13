@@ -13,6 +13,21 @@ export function initAdmin() {
   }
   
   try {
+    // 1. Vercel 환경 변수 우선 확인
+    if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+      initializeApp({
+        credential: cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          // Vercel에서 개행문자(\n)가 일반 문자열로 들어오는 것을 방지
+          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        })
+      });
+      isInitialized = true;
+      return;
+    }
+
+    // 2. 로컬 개발 환경용 파일 확인
     const serviceAccountPath = path.resolve(process.cwd(), 'service-account.json');
     if (fs.existsSync(serviceAccountPath)) {
       process.env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccountPath;
