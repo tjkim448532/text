@@ -8,13 +8,17 @@ export async function GET(request) {
   if (authResult.status !== 200) {
     return NextResponse.json({ error: authResult.error }, { status: authResult.status });
   }
+
+  const email = authResult.user.email;
+  const db = getAdminDb();
   
-  if (authResult.user.email !== 'admin@test.com') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  // 관리자 권한(SUPER) 검증
+  const roleDoc = await db.collection('user_roles').doc(email).get();
+  if (!roleDoc.exists || roleDoc.data().role !== 'SUPER') {
+    return NextResponse.json({ error: '관리자 권한이 없습니다.' }, { status: 403 });
   }
 
   try {
-    const db = getAdminDb();
     const snapshot = await db.collection('sms_history')
       .orderBy('sentAt', 'desc')
       .limit(200)

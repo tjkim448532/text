@@ -7,6 +7,7 @@ import { signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword
 export default function Home() {
   // === Auth State ===
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState('USER');
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   
   // Login State
@@ -46,19 +47,35 @@ export default function Home() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      setIsAuthLoading(false);
       
       if (currentUser) {
         try {
           const token = await currentUser.getIdToken();
-          const res = await fetch('/api/config', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          const data = await res.json();
-          setFromNumber(data.fromNumber || '미등록');
+          
+          // Fetch fromNumber
+          fetch('/api/config', { headers: { 'Authorization': `Bearer ${token}` } })
+            .then(res => res.json())
+            .then(data => setFromNumber(data.fromNumber || '미등록'))
+            .catch(() => setFromNumber('불러오기 실패'));
+
+          // Fetch user role
+          fetch('/api/auth/role', { headers: { 'Authorization': `Bearer ${token}` } })
+            .then(res => res.json())
+            .then(data => {
+              setUserRole(data.role || 'USER');
+              setIsAuthLoading(false);
+            })
+            .catch(() => {
+              setUserRole('USER');
+              setIsAuthLoading(false);
+            });
+            
         } catch (e) {
           setFromNumber('불러오기 실패');
+          setIsAuthLoading(false);
         }
+      } else {
+        setIsAuthLoading(false);
       }
     });
 
@@ -286,7 +303,7 @@ export default function Home() {
             <span style={{ color: 'var(--foreground)', fontWeight: 600 }}>{user.email}</span>
             <span style={{ cursor: 'pointer', color: '#3498db', marginTop: '4px' }} onClick={() => setIsPasswordChangeOpen(true)}>비밀번호 변경</span>
           </div>
-          {user.email === 'admin@test.com' && (
+          {userRole === 'SUPER' && (
             <button 
               onClick={() => router.push('/admin')}
               style={{

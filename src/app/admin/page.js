@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
-// 관리자 권한이 있는 이메일 목록
-const ADMIN_EMAILS = ['admin@test.com'];
+
 
 export default function AdminPage() {
   const router = useRouter();
@@ -16,17 +15,27 @@ export default function AdminPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
-        // 로그인 안 되어 있으면 메인으로
         router.push('/');
-      } else if (!ADMIN_EMAILS.includes(currentUser.email)) {
-        // 관리자가 아니면 에러 띄우고 메인으로
-        alert('관리자 권한이 없습니다.');
+        return;
+      }
+      
+      try {
+        const token = await currentUser.getIdToken();
+        const roleRes = await fetch('/api/auth/role', { headers: { 'Authorization': `Bearer ${token}` } });
+        const roleData = await roleRes.json();
+        
+        if (roleData.role !== 'SUPER') {
+          alert('최고 관리자(SUPER) 권한이 없습니다.');
+          router.push('/');
+        } else {
+          setUser(currentUser);
+          fetchHistory();
+        }
+      } catch (e) {
+        alert('권한 확인 중 오류가 발생했습니다.');
         router.push('/');
-      } else {
-        setUser(currentUser);
-        fetchHistory();
       }
     });
     return () => unsubscribe();
