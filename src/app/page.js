@@ -166,7 +166,7 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: Bearer 
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ 
           question, 
@@ -209,7 +209,7 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: Bearer 
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           to: phoneNumber,
