@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
-import admin from 'firebase-admin';
-import { getVertexAI } from 'firebase-admin/vertexai';
+import { GoogleGenAI } from '@google/genai';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import path from 'path';
+
+// Set credentials for Vertex AI
+process.env.GOOGLE_APPLICATION_CREDENTIALS = path.resolve(process.cwd(), 'service-account.json');
 
 // Initialize Firebase Admin
-if (!admin.apps.length) {
+if (!getApps().length) {
   try {
     const serviceAccount = require('../../../../service-account.json');
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      projectId: serviceAccount.project_id
+    initializeApp({
+      credential: cert(serviceAccount)
     });
   } catch (error) {
     console.error("Firebase Admin Initialization Error:", error);
@@ -23,30 +27,37 @@ export async function POST(request) {
       return NextResponse.json({ error: '직원 메모를 입력해주세요.' }, { status: 400 });
     }
 
-    // Initialize Vertex AI using Firebase Admin SDK
-    const vertexAI = getVertexAI(admin.app());
-    const model = vertexAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      generationConfig: {
-        temperature: 0.7,
-      },
-      systemInstruction: `당신은 블랙스톤 벨포레 리조트의 전문 고객 서비스 담당자입니다.
-직원이 입력한 메모를 바탕으로, 리조트 고객에게 발송할 정중하고 친절한 안내 문자를 작성해 주세요.
-글자 수는 SMS/LMS 기준에 맞게 간결하게 작성하고, 필요한 경우 인사말과 맺음말을 자연스럽게 추가하세요.`
+    // Initialize Gemini API via Vertex AI
+    const ai = new GoogleGenAI({
+      vertexai: {
+        project: 'text-7d7c6',
+        location: 'us-central1',
+      }
     });
 
-    const result = await model.generateContent(notes);
-    const response = result.response;
-    const generatedMessage = response.text();
+    const systemPrompt = `당신은 블랙스톤 벨포레 리조트의 전문 고객 서비스 담당자입니다.
+직원이 입력한 메모를 바탕으로, 리조트 고객에게 발송할 정중하고 친절한 안내 문자를 작성해 주세요.
+글자 수는 SMS/LMS 기준에 맞게 간결하게 작성하고, 필요한 경우 인사말과 맺음말을 자연스럽게 추가하세요.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: notes,
+      config: {
+        systemInstruction: systemPrompt,
+        temperature: 0.7,
+      }
+    });
+
+    const generatedMessage = response.text;
 
     // Optional: Save to Firestore
     try {
-      if (admin.apps.length) {
-        const db = admin.firestore();
+      if (getApps().length) {
+        const db = getFirestore();
         await db.collection('generated_messages').add({
           originalNotes: notes,
           generatedMessage: generatedMessage,
-          createdAt: admin.firestore.FieldValue.serverTimestamp()
+          createdAt: FieldValue.serverTimestamp()
         });
       }
     } catch (dbError) {
@@ -57,8 +68,16 @@ export async function POST(request) {
   } catch (error) {
     console.error('Error generating message:', error);
     
+    // Check if error is related to Vertex AI not being enabled
+    if (error.message && error.message.includes('Vertex AI API has not been used')) {
+      return NextResponse.json({ 
+        error: 'Vertex AI API가 활성화되지 않았습니다. Google Cloud Console에서 프로젝트(text-7d7c6)의 Vertex AI API를 활성화해주세요.',
+        details: error.message 
+      }, { status: 500 });
+    }
+
     return NextResponse.json({ 
-      error: '문자 생성에 실패했습니다. Firebase 설정(또는 Vertex AI API 활성화)을 확인해 주세요.',
+      error: '문자 생성에 실패했습니다. 관리자에게 문의하세요.',
       details: error.message 
     }, { status: 500 });
   }

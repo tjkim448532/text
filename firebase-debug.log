@@ -1,0 +1,274 @@
+[debug] [2026-06-13T01:12:55.770Z] ----------------------------------------------------------------------
+[debug] [2026-06-13T01:12:55.772Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\RESOLVE_01\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-06-13T01:12:55.772Z] CLI Version:   15.19.0
+[debug] [2026-06-13T01:12:55.772Z] Platform:      win32
+[debug] [2026-06-13T01:12:55.772Z] Node Version:  v24.14.0
+[debug] [2026-06-13T01:12:55.772Z] Time:          Sat Jun 13 2026 10:12:55 GMT+0900 (한국 표준시)
+[debug] [2026-06-13T01:12:55.773Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-06-13T01:12:56.540Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-06-13T01:12:56.540Z] > authorizing via signed-in user (tjkim448532@gmail.com)
+[debug] [2026-06-13T01:12:56.541Z] [iam] checking project text-7d7c6 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-06-13T01:12:56.541Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:12:56.541Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:12:56.542Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions [none]
+[debug] [2026-06-13T01:12:56.542Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions  x-goog-user-project=text-7d7c6
+[debug] [2026-06-13T01:12:56.542Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-06-13T01:12:56.773Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions 200
+[debug] [2026-06-13T01:12:56.773Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-06-13T01:12:56.774Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:12:56.774Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:12:56.774Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/text-7d7c6 [none]
+[debug] [2026-06-13T01:12:57.185Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/text-7d7c6 200
+[debug] [2026-06-13T01:12:57.186Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/text-7d7c6 {"projectId":"text-7d7c6","projectNumber":"872738990150","displayName":"TEXT","name":"projects/text-7d7c6","resources":{"hostingSite":"text-7d7c6"},"state":"ACTIVE","etag":"1_eb84e150-a53a-4420-8b40-d45d47464b75"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 16.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-06-13T01:13:00.882Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:13:00.882Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:13:00.883Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 [none]
+[debug] [2026-06-13T01:13:01.751Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 200
+[debug] [2026-06-13T01:13:01.751Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 {"name":"projects/text-7d7c6/sites/text-7d7c6","defaultUrl":"https://text-7d7c6.web.app","type":"DEFAULT_SITE"}
+[info] ▲ Next.js 16.2.9 (Turbopack)
+
+[info] 
+
+[info]   Creating an optimized production build ...
+
+[info] 
+> Build error occurred
+
+[info] Error: Turbopack build failed with 2 errors:
+./src/app/globals.css
+Error evaluating Node.js code
+Error: Cannot find module '@tailwindcss/postcss'
+Require stack:
+- F:\앱_코딩소스\문자발송\.next\build\chunks\[root-of-the-server]__0oj80bi._.js
+- F:\앱_코딩소스\문자발송\.next\build\chunks\[turbopack]_runtime.js
+- F:\앱_코딩소스\문자발송\.next\build\56416d4ae4ce586f.js
+    [at Module._resolveFilename (node:internal/modules/cjs/loader:1456:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1066:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1071:22)]
+    [at Module._load (node:internal/modules/cjs/loader:1242:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1556:12)]
+    [at require (node:internal/modules/helpers:152:16)]
+    at require (turbopack:///[turbopack-node]/transforms/postcss.ts:49:25) [F:\앱_코딩소스\문자발송\.next\build\chunks\[root-of-the-server]__0oj80bi._.js:134:33]
+    [at <anonymous>]
+    at map (turbopack:///[turbopack-node]/transforms/postcss.ts:43:33) [F:\앱_코딩소스\문자발송\.next\build\chunks\[root-of-the-server]__0oj80bi._.js:129:35]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.js [Server Component]
+
+
+./src/app/api/generate-message/route.js:3:1
+Module not found: Can't resolve 'firebase-admin/vertexai'
+  1 | import { NextResponse } from 'next/server';
+  2 | import admin from 'firebase-admin';
+> 3 | import { getVertexAI } from 'firebase-admin/vertexai';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | // Initialize Firebase Admin
+  6 | if (!admin.apps.length) {
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at require (turbopack:///[turbopack-node]/transforms/postcss.ts:49:25) [F:\앱_코딩소스\문자발송\.next\build\chunks\[root-of-the-server]__0oj80bi._.js:134:33])
+    at map (turbopack:///[turbopack-node]/transforms/postcss.ts:43:33) [F:\앱_코딩소스\문자발송\.next\build\chunks\[root-of-the-server]__0oj80bi._.js:129:35])
+    at <unknown> (./src/app/api/generate-message/route.js:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+
+[debug] [2026-06-13T01:13:04.871Z] Error: ENOENT: no such file or directory, open 'F:\앱_코딩소스\문자발송\.next\server\middleware-manifest.json'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-06-13T01:15:24.023Z] ----------------------------------------------------------------------
+[debug] [2026-06-13T01:15:24.025Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\RESOLVE_01\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2026-06-13T01:15:24.025Z] CLI Version:   15.19.0
+[debug] [2026-06-13T01:15:24.025Z] Platform:      win32
+[debug] [2026-06-13T01:15:24.025Z] Node Version:  v24.14.0
+[debug] [2026-06-13T01:15:24.025Z] Time:          Sat Jun 13 2026 10:15:24 GMT+0900 (한국 표준시)
+[debug] [2026-06-13T01:15:24.025Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-06-13T01:15:24.766Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-06-13T01:15:24.766Z] > authorizing via signed-in user (tjkim448532@gmail.com)
+[debug] [2026-06-13T01:15:24.766Z] [iam] checking project text-7d7c6 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-06-13T01:15:24.767Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:24.767Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:24.767Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions [none]
+[debug] [2026-06-13T01:15:24.767Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions  x-goog-user-project=text-7d7c6
+[debug] [2026-06-13T01:15:24.767Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-06-13T01:15:24.998Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions 200
+[debug] [2026-06-13T01:15:24.999Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-06-13T01:15:24.999Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:24.999Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:24.999Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/text-7d7c6 [none]
+[debug] [2026-06-13T01:15:25.399Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/text-7d7c6 200
+[debug] [2026-06-13T01:15:25.399Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/text-7d7c6 {"projectId":"text-7d7c6","projectNumber":"872738990150","displayName":"TEXT","name":"projects/text-7d7c6","resources":{"hostingSite":"text-7d7c6"},"state":"ACTIVE","etag":"1_eb84e150-a53a-4420-8b40-d45d47464b75"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 16.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-06-13T01:15:29.066Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:29.066Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:29.066Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 [none]
+[debug] [2026-06-13T01:15:29.990Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 200
+[debug] [2026-06-13T01:15:29.990Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 {"name":"projects/text-7d7c6/sites/text-7d7c6","defaultUrl":"https://text-7d7c6.web.app","type":"DEFAULT_SITE"}
+[info] ▲ Next.js 16.2.9 (Turbopack)
+
+[info] 
+
+[info]   Creating an optimized production build ...
+
+[info] ✓ Compiled successfully in 1252ms
+
+[info]   Running TypeScript ...
+
+[info]   Finished TypeScript in 65ms ...
+
+[info]   Collecting page data using 6 workers ...
+
+[info]   Generating static pages using 6 workers (0/5) ...
+
+[info]   Generating static pages using 6 workers (1/5) 
+
+[info]   Generating static pages using 6 workers (2/5) 
+
+[info]   Generating static pages using 6 workers (3/5) 
+
+[info] ✓ Generating static pages using 6 workers (5/5) in 501ms
+
+[info]   Finalizing page optimization ...
+
+[info] 
+
+[info] Route (app)
+┌ ○ /
+├ ○ /_not-found
+└ ƒ /api/generate-message
+
+
+
+[info] ○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+[info] Building a Cloud Function to run this application. This is needed due to:
+[info]  • non-static component /api/generate-message/route
+[info] 
+[debug] [2026-06-13T01:15:38.111Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:38.111Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:38.112Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 [none]
+[debug] [2026-06-13T01:15:39.132Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 200
+[debug] [2026-06-13T01:15:39.132Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 {"name":"projects/text-7d7c6/sites/text-7d7c6","defaultUrl":"https://text-7d7c6.web.app","type":"DEFAULT_SITE"}
+[debug] [2026-06-13T01:15:39.337Z] Error: EPERM: operation not permitted, symlink 'F:\앱_코딩소스\문자발송\node_modules\firebase-admin' -> 'F:\앱_코딩소스\문자발송\.firebase\text-7d7c6\functions\.next\node_modules\firebase-admin-a14c8a5423a75469'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-06-13T01:15:58.226Z] ----------------------------------------------------------------------
+[debug] [2026-06-13T01:15:58.228Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\RESOLVE_01\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --debug
+[debug] [2026-06-13T01:15:58.228Z] CLI Version:   15.19.0
+[debug] [2026-06-13T01:15:58.228Z] Platform:      win32
+[debug] [2026-06-13T01:15:58.228Z] Node Version:  v24.14.0
+[debug] [2026-06-13T01:15:58.229Z] Time:          Sat Jun 13 2026 10:15:58 GMT+0900 (한국 표준시)
+[debug] [2026-06-13T01:15:58.229Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-06-13T01:15:58.981Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-06-13T01:15:58.982Z] > authorizing via signed-in user (tjkim448532@gmail.com)
+[debug] [2026-06-13T01:15:58.982Z] [iam] checking project text-7d7c6 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-06-13T01:15:58.982Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:58.983Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:58.983Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions [none]
+[debug] [2026-06-13T01:15:58.983Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions  x-goog-user-project=text-7d7c6
+[debug] [2026-06-13T01:15:58.983Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-06-13T01:15:59.208Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions 200
+[debug] [2026-06-13T01:15:59.208Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/text-7d7c6:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-06-13T01:15:59.208Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:59.208Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:15:59.208Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/text-7d7c6 [none]
+[debug] [2026-06-13T01:15:59.645Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/text-7d7c6 200
+[debug] [2026-06-13T01:15:59.645Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/text-7d7c6 {"projectId":"text-7d7c6","projectNumber":"872738990150","displayName":"TEXT","name":"projects/text-7d7c6","resources":{"hostingSite":"text-7d7c6"},"state":"ACTIVE","etag":"1_eb84e150-a53a-4420-8b40-d45d47464b75"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 16.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-06-13T01:16:03.380Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:16:03.380Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:16:03.380Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 [none]
+[debug] [2026-06-13T01:16:04.312Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 200
+[debug] [2026-06-13T01:16:04.312Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 {"name":"projects/text-7d7c6/sites/text-7d7c6","defaultUrl":"https://text-7d7c6.web.app","type":"DEFAULT_SITE"}
+[info] ▲ Next.js 16.2.9 (Turbopack)
+
+[info] 
+
+[info]   Creating an optimized production build ...
+
+[info] ✓ Compiled successfully in 1367ms
+
+[info]   Running TypeScript ...
+
+[info]   Finished TypeScript in 74ms ...
+
+[info]   Collecting page data using 6 workers ...
+
+[info]   Generating static pages using 6 workers (0/5) ...
+
+[info]   Generating static pages using 6 workers (1/5) 
+
+[info]   Generating static pages using 6 workers (2/5) 
+
+[info]   Generating static pages using 6 workers (3/5) 
+
+[info] ✓ Generating static pages using 6 workers (5/5) in 626ms
+
+[info]   Finalizing page optimization ...
+
+[info] 
+
+[info] Route (app)
+┌ ○ /
+├ ○ /_not-found
+└ ƒ /api/generate-message
+
+
+[info] 
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+[info] Building a Cloud Function to run this application. This is needed due to:
+[info]  • non-static component /api/generate-message/route
+[info] 
+[debug] [2026-06-13T01:16:10.984Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:16:10.985Z] Checked if tokens are valid: true, expires at: 1781316717710
+[debug] [2026-06-13T01:16:10.985Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 [none]
+[debug] [2026-06-13T01:16:11.833Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 200
+[debug] [2026-06-13T01:16:11.833Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/text-7d7c6/sites/text-7d7c6 {"name":"projects/text-7d7c6/sites/text-7d7c6","defaultUrl":"https://text-7d7c6.web.app","type":"DEFAULT_SITE"}
+[debug] [2026-06-13T01:16:12.051Z] Error: EPERM: operation not permitted, symlink 'F:\앱_코딩소스\문자발송\node_modules\firebase-admin' -> 'F:\앱_코딩소스\문자발송\.firebase\text-7d7c6\functions\.next\node_modules\firebase-admin-a14c8a5423a75469'
+[error] 
+[error] Error: An unexpected error has occurred.
