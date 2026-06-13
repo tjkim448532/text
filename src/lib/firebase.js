@@ -2,12 +2,13 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCc64ZyYai0gWp51qV_XKOVAY5d6gBixuM",
-  authDomain: "belleforetcs.firebaseapp.com",
-  projectId: "belleforetcs",
-  storageBucket: "belleforetcs.firebasestorage.app",
-  messagingSenderId: "732665193591",
-  appId: "1:732665193591:web:f8090194fd62d674675272"
+  apiKey: "AIzaSyCxFkZme6VZQLXefe1HvmT2K1c3FbwHuco",
+  authDomain: "text-7d7c6.firebaseapp.com",
+  projectId: "text-7d7c6",
+  storageBucket: "text-7d7c6.firebasestorage.app",
+  messagingSenderId: "872738990150",
+  appId: "1:872738990150:web:02ac3928bae15537194247",
+  measurementId: "G-YV89DXVJ78"
 };
 
 // Initialize Firebase
