@@ -176,13 +176,29 @@ export default function Home() {
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error((data.error || '문자 생성에 실패했습니다.') + (data.details ? ` (상세: ${data.details})` : ''));
+        let errorMsg = '문자 생성에 실패했습니다.';
+        try {
+          const data = await response.json();
+          errorMsg = data.error || errorMsg;
+        } catch(e) {}
+        throw new Error(errorMsg);
       }
 
-      setGeneratedMessage(data.result);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedMessage = '';
+      
+      setGeneratedMessage(''); // 초기화
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunkText = decoder.decode(value, { stream: true });
+        accumulatedMessage += chunkText;
+        setGeneratedMessage(accumulatedMessage);
+      }
     } catch (err) {
       setError(err.message);
     } finally {

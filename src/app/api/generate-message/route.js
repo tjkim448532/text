@@ -69,8 +69,8 @@ export async function POST(request) {
 ${retrievedContexts || '검색된 관련 규정이 없습니다.'}
 `;
 
-    // 답변 생성
-    const response = await ai.models.generateContent({
+    // 문장 생성 (스트리밍)
+    const responseStream = await ai.models.generateContentStream({
       model: 'gemini-flash-latest',
       contents: question,
       config: {
@@ -79,23 +79,48 @@ ${retrievedContexts || '검색된 관련 규정이 없습니다.'}
       }
     });
 
-    const generatedMessage = response.text;
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        let fullText = '';
+        try {
+          for await (const chunk of responseStream) {
+            if (chunk.text) {
+              fullText += chunk.text;
+              controller.enqueue(encoder.encode(chunk.text));
+            }
+          }
 
-    // Optional: Save to Firestore (백그라운드 실행으로 속도 개선)
-    try {
-      const db = getAdminDb();
-      db.collection('generated_messages').add({
-        customerName: customerName || '미상',
-        phoneNumber: phoneNumber || '미입력',
-        question: question,
-        generatedMessage: generatedMessage,
-        createdAt: FieldValue.serverTimestamp()
-      }).catch(dbError => console.warn("Firestore 기록 실패:", dbError.message));
-    } catch (error) {
-      // 무시
-    }
+          // 스트리밍이 완료된 후 백그라운드에서 Firestore 기록
+          try {
+            const db = getAdminDb();
+            db.collection('generated_messages').add({
+              customerName: customerName || '미상',
+              phoneNumber: phoneNumber || '미입력',
+              question: question,
+              generatedMessage: fullText,
+              createdAt: FieldValue.serverTimestamp()
+            }).catch(dbError => console.warn("Firestore 기록 실패:", dbError.message));
+          } catch (error) {
+            // 무시
+          }
+          
+        } catch (err) {
+          console.error("Stream error:", err);
+          controller.error(err);
+        } finally {
+          controller.close();
+        }
+      }
+    });
 
-    return NextResponse.json({ result: generatedMessage });
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
   } catch (error) {
     console.error('Error generating message:', error);
     
