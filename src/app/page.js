@@ -75,7 +75,7 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || '문자 생성에 실패했습니다.');
+        throw new Error((data.error || '문자 생성에 실패했습니다.') + (data.details ? ` (상세: ${data.details})` : ''));
       }
 
       setGeneratedMessage(data.result);
