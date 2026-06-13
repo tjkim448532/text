@@ -48,7 +48,12 @@ export async function GET(request) {
       
     const history = [];
     snapshot.forEach(doc => {
-      history.push({ id: doc.id, ...doc.data() });
+      const data = doc.data();
+      history.push({ 
+        id: doc.id, 
+        ...data,
+        sentAt: data.sentAt ? data.sentAt.toDate().toISOString() : null
+      });
     });
     
     return NextResponse.json({ history });

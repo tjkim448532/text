@@ -214,10 +214,12 @@ export default function Home() {
   };
 
   const handleReset = () => {
+    setPhoneNumber('');
+    setCustomerName('');
     setQuestion('');
     setGeneratedMessage('');
-    setError('');
     setSendStatus({ type: '', message: '' });
+    setError('');
   };
 
   // === Renders ===
@@ -486,8 +488,8 @@ export default function Home() {
               <div style={{ fontSize: '0.85rem', color: '#888', textAlign: 'center', marginTop: '20px' }}>과거 문의 내역이 없습니다.</div>
             )}
             
-            {!isFetchingHistory && customerHistory.map((item, idx) => (
-              <div key={idx} style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px', marginBottom: '10px', fontSize: '0.85rem' }}>
+            {!isFetchingHistory && customerHistory.map((item) => (
+              <div key={item.id} style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px', marginBottom: '10px', fontSize: '0.85rem' }}>
                 <div style={{ opacity: 0.6, marginBottom: '4px', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
                   <span>{new Date(item.sentAt).toLocaleString()}</span>
                   {item.employeeEmail && <span style={{ background: 'rgba(52, 152, 219, 0.2)', color: '#3498db', padding: '2px 6px', borderRadius: '4px' }}>담당: {item.employeeEmail.split('@')[0]}</span>}
