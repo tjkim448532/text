@@ -219,7 +219,7 @@ export default function Home() {
       <div className="app-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <div className="glass-card" style={{ width: '100%', maxWidth: '400px', padding: '40px 30px' }}>
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <h1 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>Belleforet CS</h1>
+            <h1 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>문자 발송 TEST</h1>
             <p style={{ color: '#ccc', fontSize: '0.9rem' }}>직원 로그인</p>
           </div>
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -230,7 +230,7 @@ export default function Home() {
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 className="input-field" 
-                placeholder="email@belleforet.com"
+                placeholder="test@example.com"
                 required
               />
             </div>
@@ -259,7 +259,7 @@ export default function Home() {
     <div className="app-container">
       <header className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1>Belleforet</h1>
+          <h1>문자 발송 TEST</h1>
           <p>AI CS 통합 센터</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -365,7 +365,7 @@ export default function Home() {
               &times;
             </button>
             <h2 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              🛎️ 벨포레CS 문자 발송 시스템 가이드
+              🛎️ TEST 문자 발송 시스템 가이드
             </h2>
             <div style={{ lineHeight: '1.6', fontSize: '0.95rem', color: '#f8f9fa' }}>
               <p>초보자도 클릭 몇 번이면 베테랑처럼 고객 문의에 답변할 수 있습니다. 아래의 3단계 흐름만 기억하세요!</p>
@@ -384,7 +384,7 @@ export default function Home() {
                 <ul style={{ paddingLeft: '20px', marginTop: '5px', listStyleType: 'circle' }}>
                   <li><strong>입력:</strong> <code>010-1234-5678</code> / <code>홍길동</code></li>
                   <li><strong>질문 요약:</strong> "루지 키 제한이랑 가격 어떻게 돼?"</li>
-                  <li><strong>생성:</strong> AI가 벨포레 데이터베이스를 검색해 정중한 답변을 자동 완성합니다.</li>
+                  <li><strong>생성:</strong> AI가 TEST 데이터베이스를 검색해 정중한 답변을 자동 완성합니다.</li>
                   <li><strong>발송:</strong> 내용을 확인하고 [최종 발송]을 누르면 끝!</li>
                 </ul>
               </div>
